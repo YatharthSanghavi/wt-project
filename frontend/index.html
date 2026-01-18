@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frolic Event Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-brand { font-weight: bold; color: #fff !important; }
+        .dashboard-card { transition: transform 0.2s; cursor: pointer; }
+        .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; margin-bottom: 2rem; }
+        .btn-primary { background: #667eea; border: none; }
+        .btn-primary:hover { background: #5568d3; }
+        .table-hover tbody tr:hover { background-color: #f8f9fa; }
+        .event-card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .event-card:hover { transform: translateY(-5px); }
+        .winner-badge { font-size: 3rem; }
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .login-card { max-width: 400px; width: 100%; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="fas fa-calendar-alt me-2"></i>Frolic Events</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('dashboard')">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('institutes')">Institutes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('departments')">Departments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('events')">Events</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('groups')">Groups</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('winners')">Winners</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('login')"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Page -->
+    <div id="login-page" class="page" style="display: none;">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="card shadow-lg">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4"><i class="fas fa-calendar-alt me-2"></i>Frolic Events</h2>
+                        <h5 class="text-center mb-4 text-muted">Admin Login</h5>
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" placeholder="Enter your email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" placeholder="Enter your password" required>
+                            </div>
+                            <button type="button" class="btn btn-primary w-100 mb-3" onclick="showPage('dashboard')">Login</button>
+                            <div class="text-center">
+                                <a href="#" class="text-decoration-none">Forgot Password?</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard-page" class="page">
+        <div class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h1>
+                <p class="mb-0">Manage your event management system</p>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="card dashboard-card bg-primary text-white" onclick="showPage('institutes')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-university fa-3x mb-3"></i>
+                            <h3>25</h3>
+                            <p class="mb-0">Institutes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-card bg-success text-white" onclick="showPage('departments')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-building fa-3x mb-3"></i>
+                            <h3>48</h3>
+                            <p class="mb-0">Departments</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-card bg-warning text-white" onclick="showPage('events')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar fa-3x mb-3"></i>
+                            <h3>120</h3>
+                            <p class="mb-0">Events</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-card bg-info text-white" onclick="showPage('groups')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-users fa-3x mb-3"></i>
+                            <h3>350</h3>
+                            <p class="mb-0">Groups</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Institutes Page -->
+    <div id="institutes-page" class="page" style="display: none;">
+        <div class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-university me-2"></i>Institutes Management</h1>
+            </div>
+        </div>
+        <div class="container">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">All Institutes</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#instituteModal">
+                        <i class="fas fa-plus me-2"></i>Add Institute
+                    </button>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>City</th>
+                                <th>Coordinator</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>MIT College</td>
+                                <td>Boston</td>
+                                <td>John Doe</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Stanford University</td>
+                                <td>Stanford</td>
+                                <td>Jane Smith</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Departments Page -->
+    <div id="departments-page" class="page" style="display: none;">
+        <div class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-building me-2"></i>Departments Management</h1>
+            </div>
+        </div>
+        <div class="container">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">All Departments</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#departmentModal">
+                        <i class="fas fa-plus me-2"></i>Add Department
+                    </button>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Institute</th>
+                                <th>Coordinator</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Computer Science</td>
+                                <td>MIT College</td>
+                                <td>Dr. Alan Turing</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Electronics</td>
+                                <td>MIT College</td>
+                                <td>Dr. Nikola Tesla</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events Page -->
+    <div id="events-page" class="page" style="display: none;">
+        <div class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-calendar me-2"></i>Events Management</h1>
+            </div>
+        </div>
+        <div class="container">
+            <div class="mb-3">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#eventModal">
+                    <i class="fas fa-plus me-2"></i>Add Event
+                </button>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card event-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Coding Marathon</h5>
+                            <p class="text-muted mb-2"><i class="fas fa-building me-2"></i>Computer Science</p>
+                            <p class="card-text">A 24-hour coding competition for tech enthusiasts</p>
+                            <div class="mb-2">
+                                <span class="badge bg-primary">Fees: $50</span>
+                                <span class="badge bg-success">Prize: $500</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted"><i class="fas fa-users me-1"></i>3-5 participants</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary flex-fill"><i class="fas fa-eye"></i> View</button>
+                                <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card event-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Robotics Challenge</h5>
+                            <p class="text-muted mb-2"><i class="fas fa-building me-2"></i>Electronics</p>
+                            <p class="card-text">Build and compete with your robot creations</p>
+                            <div class="mb-2">
+                                <span class="badge bg-primary">Fees: $75</span>
+                                <span class="badge bg-success">Prize: $1000</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted"><i class="fas fa-users me-1"></i>2-4 participants</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-primary flex-fill"><i class="fas fa-eye"></i> View</button>
+                                <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Groups Page -->
+    <div id="groups-page" class="page" style="display: none;">
+        <div class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-users me-2"></i>Groups Management</h1>
+            </div>
+        </div>
+        <div class="container">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Group Name</th>
+                                <th>Event</th>
+                                <th>Payment</th>
+                                <th>Attendance</th>
+                                <th>Participants</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Code Warriors</td>
+                                <td>Coding Marathon</td>
+                                <td><span class="badge bg-success">Paid</span></td>
+                                <td><span class="badge bg-info">Present</span></td>
+                                <td>4</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Tech Titans</td>
+                                <td>Coding Marathon</td>
+                                <td><span class="badge bg-warning">Pending</span></td>
+                                <td><span class="badge bg-secondary">Absent</span></td>
+                                <td>3</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Winners Page -->
+    <div id="winners-page" class="page" style="display: none;">
+        <div class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-trophy me-2"></i>Event Winners</h1>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-trophy winner-badge text-warning"></i>
+                            <h3 class="mt-3">1st Place</h3>
+                            <h5>Code Warriors</h5>
+                            <p class="text-muted">Coding Marathon</p>
+                            <p><strong>Prize:</strong> $500</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-medal winner-badge text-secondary"></i>
+                            <h3 class="mt-3">2nd Place</h3>
+                            <h5>Tech Titans</h5>
+                            <p class="text-muted">Coding Marathon</p>
+                            <p><strong>Prize:</strong> $300</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-award winner-badge" style="color: #cd7f32;"></i>
+                            <h3 class="mt-3">3rd Place</h3>
+                            <h5>Byte Busters</h5>
+                            <p class="text-muted">Coding Marathon</p>
+                            <p><strong>Prize:</strong> $200</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="instituteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Institute</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Institute Name</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Coordinator</label>
+                            <select class="form-select">
+                                <option>Select Coordinator</option>
+                                <option>John Doe</option>
+                                <option>Jane Smith</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save Institute</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="departmentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Department</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Department Name</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Institute</label>
+                            <select class="form-select">
+                                <option>Select Institute</option>
+                                <option>MIT College</option>
+                                <option>Stanford University</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Coordinator</label>
+                            <select class="form-select">
+                                <option>Select Coordinator</option>
+                                <option>Dr. Alan Turing</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save Department</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="eventModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Event Name</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Department</label>
+                                <select class="form-select">
+                                    <option>Computer Science</option>
+                                    <option>Electronics</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tagline</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fees</label>
+                                <input type="number" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prize</label>
+                                <input type="number" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Min Participants</label>
+                                <input type="number" class="form-control" min="1">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Max Participants</label>
+                                <input type="number" class="form-control" min="1">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save Event</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showPage(pageName) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.style.display = 'none');
+            
+            const targetPage = document.getElementById(pageName + '-page');
+            if (targetPage) {
+                targetPage.style.display = 'block';
+            }
+            
+            if (pageName === 'login') {
+                document.querySelector('.navbar').style.display = 'none';
+            } else {
+                document.querySelector('.navbar').style.display = 'block';
+            }
+        }
+
+        // Show dashboard by default
+        window.onload = function() {
+            showPage('dashboard');
+        };
+    </script>
+</body>
+</html>
