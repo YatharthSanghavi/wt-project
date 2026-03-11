@@ -9,14 +9,22 @@ const testAPI = async () => {
   try {
     // Test 1: Register User
     console.log('1️⃣ Testing User Registration...');
-    const registerRes = await axios.post(`${BASE_URL}/auth/register`, {
-      name: 'Test User',
-      email: 'test@example.com',
-      phone: '9999999999',
-      password: 'test123',
-      role: 'student'
-    });
-    console.log('✅ User registered:', registerRes.data.data.user.name);
+    try {
+      const registerRes = await axios.post(`${BASE_URL}/auth/register`, {
+        name: 'Test User',
+        email: 'test@example.com',
+        phone: '9999999999',
+        password: 'test123',
+        role: 'student'
+      });
+      console.log('✅ User registered:', registerRes.data.user.name);
+    } catch (err) {
+      if (err.response?.data?.message?.includes('already exists')) {
+        console.log('⚠️  User already exists, skipping...');
+      } else {
+        throw err;
+      }
+    }
 
     // Test 2: Login
     console.log('\n2️⃣ Testing Login...');
@@ -24,7 +32,7 @@ const testAPI = async () => {
       email: 'admin@frolic.com',
       password: 'admin123'
     });
-    authToken = loginRes.data.data.token;
+    authToken = loginRes.data.token;
     console.log('✅ Login successful, token received');
 
     // Test 3: Get Current User
@@ -44,7 +52,7 @@ const testAPI = async () => {
     const newInstituteRes = await axios.post(
       `${BASE_URL}/institutes`,
       {
-        instituteName: 'Test Institute',
+        instituteName: 'Test Institute ' + Date.now(),
         city: 'Test City'
       },
       { headers: { Authorization: `Bearer ${authToken}` } }
@@ -123,6 +131,31 @@ const testAPI = async () => {
     console.log('\n1️⃣3️⃣ Testing Get Event Summary...');
     const summaryRes = await axios.get(`${BASE_URL}/events/${eventId}/summary`);
     console.log('✅ Event summary:', summaryRes.data.data);
+
+    // Test 14: Get Users (Admin)
+    console.log('\n1️⃣4️⃣ Testing Get All Users...');
+    const usersRes = await axios.get(`${BASE_URL}/users`, {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+    console.log(`✅ Found ${usersRes.data.count} users`);
+
+    // Test 15: Pagination
+    console.log('\n1️⃣5️⃣ Testing Pagination...');
+    const paginatedRes = await axios.get(`${BASE_URL}/events?page=1&limit=2`);
+    console.log(`✅ Pagination works: ${paginatedRes.data.count} of ${paginatedRes.data.total} events`);
+
+    // Cleanup
+    console.log('\n🧹 Cleanup...');
+    await axios.delete(`${BASE_URL}/events/${eventId}`, {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+    await axios.delete(`${BASE_URL}/departments/${deptId}`, {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+    await axios.delete(`${BASE_URL}/institutes/${instituteId}`, {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+    console.log('✅ Test data cleaned up');
 
     console.log('\n=================================');
     console.log('🎉 All tests passed successfully!');

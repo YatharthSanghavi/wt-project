@@ -7,23 +7,26 @@ const Group = require('../models/Group');
 
 router.get('/', async (req, res, next) => {
   try {
-    const { department, search, location } = req.query;
-    
+    const { department, search, location, page, limit } = req.query;
     let query = {};
 
     if (department) {
       query.departmentId = department;
     }
-
     if (search) {
       query.eventName = { $regex: search, $options: 'i' };
     }
-
     if (location) {
       query.eventLocation = { $regex: location, $options: 'i' };
     }
 
-    const events = await Event.find(query)
+    // Pagination
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 0; // 0 = all
+    const skip = limitNum > 0 ? (pageNum - 1) * limitNum : 0;
+    const total = await Event.countDocuments(query);
+
+    let eventsQuery = Event.find(query)
       .populate('departmentId', 'departmentName instituteId')
       .populate({
         path: 'departmentId',
@@ -35,9 +38,18 @@ router.get('/', async (req, res, next) => {
       .populate('coordinatorId', 'name email phone')
       .sort('-createdAt');
 
+    if (limitNum > 0) {
+      eventsQuery = eventsQuery.skip(skip).limit(limitNum);
+    }
+
+    const events = await eventsQuery;
+
     res.json({
       success: true,
       count: events.length,
+      total,
+      page: pageNum,
+      pages: limitNum > 0 ? Math.ceil(total / limitNum) : 1,
       data: events
     });
   } catch (error) {
@@ -96,24 +108,13 @@ router.get('/department/:departmentId', async (req, res, next) => {
   }
 });
 
-router.post('/', protect, authorize('admin', 'department_coordinator'), async (req, res, next) => {
+router.post('/', protect, authorize('admin', 'departmentCoord'), async (req, res, next) => {
   try {
     const {
-      eventName,
-      tagline,
-      description,
-      departmentId,
-      eventImage,
-      fees,
-      prizes,
-      groupMinParticipants,
-      groupMaxParticipants,
-      eventLocation,
-      maxGroupsAllowed,
-      coordinatorId,
-      studentCoordinatorName,
-      studentCoordinatorPhone,
-      studentCoordinatorEmail
+      eventName, tagline, description, departmentId, eventImage,
+      fees, prizes, groupMinParticipants, groupMaxParticipants,
+      eventLocation, maxGroupsAllowed, coordinatorId,
+      studentCoordinatorName, studentCoordinatorPhone, studentCoordinatorEmail
     } = req.body;
 
     const department = await Department.findById(departmentId);
@@ -124,7 +125,7 @@ router.post('/', protect, authorize('admin', 'department_coordinator'), async (r
       });
     }
 
-    if (req.user.role === 'department_coordinator') {
+    if (req.user.role === 'departmentCoord') {
       if (department.coordinatorId && department.coordinatorId.toString() !== req.user._id.toString()) {
         return res.status(403).json({
           success: false,
@@ -140,36 +141,11 @@ router.post('/', protect, authorize('admin', 'department_coordinator'), async (r
       });
     }
 
-    if (groupMinParticipants < 1) {
-      return res.status(400).json({
-        success: false,
-        message: 'Minimum participants must be at least 1'
-      });
-    }
-
-    if (maxGroupsAllowed < 1) {
-      return res.status(400).json({
-        success: false,
-        message: 'Maximum groups allowed must be at least 1'
-      });
-    }
-
     const event = await Event.create({
-      eventName,
-      tagline,
-      description,
-      departmentId,
-      eventImage,
-      fees,
-      prizes,
-      groupMinParticipants,
-      groupMaxParticipants,
-      eventLocation,
-      maxGroupsAllowed,
-      coordinatorId,
-      studentCoordinatorName,
-      studentCoordinatorPhone,
-      studentCoordinatorEmail,
+      eventName, tagline, description, departmentId, eventImage,
+      fees, prizes, groupMinParticipants, groupMaxParticipants,
+      eventLocation, maxGroupsAllowed, coordinatorId,
+      studentCoordinatorName, studentCoordinatorPhone, studentCoordinatorEmail,
       modifiedBy: req.user._id
     });
 
@@ -177,10 +153,7 @@ router.post('/', protect, authorize('admin', 'department_coordinator'), async (r
       .populate('departmentId', 'departmentName instituteId')
       .populate({
         path: 'departmentId',
-        populate: {
-          path: 'instituteId',
-          select: 'instituteName city'
-        }
+        populate: { path: 'instituteId', select: 'instituteName city' }
       })
       .populate('coordinatorId', 'name email phone');
 
@@ -194,7 +167,7 @@ router.post('/', protect, authorize('admin', 'department_coordinator'), async (r
   }
 });
 
-router.patch('/:id', protect, authorize('admin', 'event_coordinator', 'department_coordinator'), async (req, res, next) => {
+router.patch('/:id', protect, authorize('admin', 'eventCoord', 'departmentCoord'), async (req, res, next) => {
   try {
     let event = await Event.findById(req.params.id);
 
@@ -205,7 +178,7 @@ router.patch('/:id', protect, authorize('admin', 'event_coordinator', 'departmen
       });
     }
 
-    if (req.user.role === 'event_coordinator') {
+    if (req.user.role === 'eventCoord') {
       if (event.coordinatorId && event.coordinatorId.toString() !== req.user._id.toString()) {
         return res.status(403).json({
           success: false,
@@ -217,45 +190,23 @@ router.patch('/:id', protect, authorize('admin', 'event_coordinator', 'departmen
     if (req.body.groupMinParticipants || req.body.groupMaxParticipants) {
       const minPart = req.body.groupMinParticipants || event.groupMinParticipants;
       const maxPart = req.body.groupMaxParticipants || event.groupMaxParticipants;
-
       if (minPart > maxPart) {
         return res.status(400).json({
           success: false,
           message: 'Minimum participants cannot be greater than maximum participants'
         });
       }
-
-      if (minPart < 1) {
-        return res.status(400).json({
-          success: false,
-          message: 'Minimum participants must be at least 1'
-        });
-      }
-    }
-
-    if (req.body.maxGroupsAllowed && req.body.maxGroupsAllowed < 1) {
-      return res.status(400).json({
-        success: false,
-        message: 'Maximum groups allowed must be at least 1'
-      });
     }
 
     event = await Event.findByIdAndUpdate(
       req.params.id,
-      {
-        ...req.body,
-        modifiedAt: Date.now(),
-        modifiedBy: req.user._id
-      },
+      { ...req.body, modifiedAt: Date.now(), modifiedBy: req.user._id },
       { new: true, runValidators: true }
     )
       .populate('departmentId', 'departmentName instituteId')
       .populate({
         path: 'departmentId',
-        populate: {
-          path: 'instituteId',
-          select: 'instituteName city'
-        }
+        populate: { path: 'instituteId', select: 'instituteName city' }
       })
       .populate('coordinatorId', 'name email phone');
 

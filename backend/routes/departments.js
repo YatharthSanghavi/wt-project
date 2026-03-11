@@ -44,7 +44,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-router.post('/', protect, authorize('admin', 'institute_coordinator'), async (req, res, next) => {
+router.post('/', protect, authorize('admin', 'instituteCoord'), async (req, res, next) => {
   try {
     const { departmentName, instituteId, departmentImage, description, coordinatorId } = req.body;
 
@@ -56,7 +56,7 @@ router.post('/', protect, authorize('admin', 'institute_coordinator'), async (re
       });
     }
 
-    if (req.user.role === 'institute_coordinator') {
+    if (req.user.role === 'instituteCoord') {
       if (institute.coordinatorId && institute.coordinatorId.toString() !== req.user._id.toString()) {
         return res.status(403).json({
           success: false,
@@ -96,7 +96,7 @@ router.post('/', protect, authorize('admin', 'institute_coordinator'), async (re
   }
 });
 
-router.patch('/:id', protect, authorize('admin', 'department_coordinator'), async (req, res, next) => {
+router.patch('/:id', protect, authorize('admin', 'departmentCoord'), async (req, res, next) => {
   try {
     const { departmentName, instituteId, departmentImage, description, coordinatorId } = req.body;
 
@@ -109,7 +109,7 @@ router.patch('/:id', protect, authorize('admin', 'department_coordinator'), asyn
       });
     }
 
-    if (req.user.role === 'department_coordinator') {
+    if (req.user.role === 'departmentCoord') {
       if (department.coordinatorId && department.coordinatorId.toString() !== req.user._id.toString()) {
         return res.status(403).json({
           success: false,

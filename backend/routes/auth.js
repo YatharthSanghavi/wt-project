@@ -8,9 +8,8 @@ const User = require('../models/User');
 // @access  Public
 router.post('/register', async (req, res, next) => {
   try {
-    const { name, email, password, phone, role, instituteId, departmentId } = req.body;
+    const { name, email, password, phone } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -19,18 +18,15 @@ router.post('/register', async (req, res, next) => {
       });
     }
 
-    // Create user
+    // Role is always 'student' for public registration (security)
     const user = await User.create({
       name,
       email,
       password,
       phone,
-      role: role || 'participant',
-      instituteId,
-      departmentId
+      role: 'student'
     });
 
-    // Create JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key',
@@ -41,7 +37,7 @@ router.post('/register', async (req, res, next) => {
       success: true,
       message: 'User registered successfully',
       token,
-      data: {
+      user: {
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -61,7 +57,6 @@ router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -69,7 +64,6 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
-    // Check for user
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
@@ -79,7 +73,6 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
-    // Check if password matches
     const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
@@ -89,7 +82,6 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
-    // Create JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key',
@@ -100,7 +92,7 @@ router.post('/login', async (req, res, next) => {
       success: true,
       message: 'Logged in successfully',
       token,
-      data: {
+      user: {
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -118,7 +110,6 @@ router.post('/login', async (req, res, next) => {
 // @access  Private
 router.get('/me', async (req, res, next) => {
   try {
-    // Get token from header
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
@@ -128,12 +119,9 @@ router.get('/me', async (req, res, next) => {
       });
     }
 
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
 
-    const user = await User.findById(decoded.id)
-      .populate('instituteId', 'instituteName city')
-      .populate('departmentId', 'departmentName');
+    const user = await User.findById(decoded.id);
 
     if (!user) {
       return res.status(404).json({
@@ -147,7 +135,10 @@ router.get('/me', async (req, res, next) => {
       data: user
     });
   } catch (error) {
-    next(error);
+    res.status(401).json({
+      success: false,
+      message: 'Not authorized, token invalid'
+    });
   }
 });
 

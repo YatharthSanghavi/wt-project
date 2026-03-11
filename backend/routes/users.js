@@ -9,7 +9,6 @@ const User = require('../models/User');
 router.get('/', protect, authorize('admin'), async (req, res, next) => {
   try {
     const { role, search } = req.query;
-    
     let query = {};
 
     if (role) {
@@ -23,10 +22,7 @@ router.get('/', protect, authorize('admin'), async (req, res, next) => {
       ];
     }
 
-    const users = await User.find(query)
-      .populate('instituteId', 'instituteName city')
-      .populate('departmentId', 'departmentName')
-      .sort('-createdAt');
+    const users = await User.find(query).sort('-createdAt');
 
     res.json({
       success: true,
@@ -43,9 +39,7 @@ router.get('/', protect, authorize('admin'), async (req, res, next) => {
 // @access  Private
 router.get('/:id', protect, async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id)
-      .populate('instituteId', 'instituteName city')
-      .populate('departmentId', 'departmentName');
+    const user = await User.findById(req.params.id);
 
     if (!user) {
       return res.status(404).json({
@@ -54,7 +48,6 @@ router.get('/:id', protect, async (req, res, next) => {
       });
     }
 
-    // Check if user is accessing their own data or is admin
     if (user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -85,7 +78,6 @@ router.patch('/:id', protect, async (req, res, next) => {
       });
     }
 
-    // Check if user is updating their own data or is admin
     if (user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -93,12 +85,9 @@ router.patch('/:id', protect, async (req, res, next) => {
       });
     }
 
-    // Fields that can be updated
-    const allowedFields = ['name', 'phone', 'instituteId', 'departmentId'];
-    
-    // Admin can also update role
+    const allowedFields = ['name', 'phone'];
     if (req.user.role === 'admin') {
-      allowedFields.push('role');
+      allowedFields.push('role', 'isActive');
     }
 
     const updates = {};
@@ -112,9 +101,7 @@ router.patch('/:id', protect, async (req, res, next) => {
       req.params.id,
       updates,
       { new: true, runValidators: true }
-    )
-      .populate('instituteId', 'instituteName city')
-      .populate('departmentId', 'departmentName');
+    );
 
     res.json({
       success: true,
